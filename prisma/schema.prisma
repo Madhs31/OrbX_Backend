@@ -1,0 +1,67 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Modelos de Dados ---
+
+// 1. Usuário (para Login/Registro e Dashboard/Admin)
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String  // Hash da senha
+  name     String
+  role     String  @default("user") // "user" ou "admin"
+  
+  @@map("users")
+}
+
+// 2. Continente
+model Continent {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  area    Float?   // Em milhões de km²
+  population BigInt? // População total
+  
+  countries Country[]
+  
+  @@map("continents")
+}
+
+// 3. País (Com link para Continente)
+model Country {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  capital      String?
+  population   BigInt?
+  isoCode      String?  @unique // Ex: USA, BRA
+  flagUrl      String?
+  
+  continentId  Int
+  continent    Continent @relation(fields: [continentId], references: [id])
+  
+  cities       City[]
+  
+  @@map("countries")
+}
+
+// 4. Cidade (Com link para País)
+model City {
+  id            Int      @id @default(autoincrement())
+  name          String
+  latitude      Float?
+  longitude     Float?
+  population    BigInt?
+  
+  countryId     Int
+  country       Country @relation(fields: [countryId], references: [id])
+  
+  @@unique([name, countryId]) // Uma cidade só pode existir uma vez em um país.
+  @@map("cities")
+}
