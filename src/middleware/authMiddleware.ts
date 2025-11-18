@@ -1,4 +1,3 @@
-// src/middleware/authMiddleware.ts
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -19,20 +18,18 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            // Token inválido (expirado, modificado, etc.)
             return res.status(403).json({ error: 'Token inválido ou expirado.' });
         }
         
-        req.user = user; // Adiciona os dados do payload à requisição
+        req.user = user; 
         next();
     });
 };
 
 // 2. Verifica se o usuário autenticado tem a role de 'admin'
 export const checkAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
-    // A validação de 'req.user' é feita pelo 'authenticateToken'
     if (req.user && req.user.role === 'admin') {
-        next(); // Usuário é admin, prossegue
+        next();
     } else {
         res.status(403).json({ error: 'Permissão negada. Requer acesso de administrador.' });
     }
