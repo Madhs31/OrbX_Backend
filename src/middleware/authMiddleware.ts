@@ -8,10 +8,8 @@ interface AuthRequest extends Request {
     user?: { id: number, email: string, role: string };
 }
 
-// 1. Verifica se o token JWT é válido e adiciona os dados do usuário à requisição
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
-    // Espera-se o formato: Bearer TOKEN
     const token = authHeader && authHeader.split(' ')[1]; 
 
     if (token == null) return res.status(401).json({ error: 'Acesso negado. Token ausente.' });
@@ -26,11 +24,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     });
 };
 
-// 2. Verifica se o usuário autenticado tem a role de 'admin'
 export const checkAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (req.user && req.user.role === 'admin') {
+    if (req.user) {
         next();
     } else {
-        res.status(403).json({ error: 'Permissão negada. Requer acesso de administrador.' });
+        res.status(403).json({ error: 'Permissão negada. Requer autenticação.' });
     }
 };
