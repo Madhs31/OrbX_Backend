@@ -6,11 +6,11 @@ dotenv.config();
 
 const OPENWEATHERMAP_API_KEY = process.env.OPENWEATHERMAP_API_KEY;
 
-// ADIÇÃO: Chave e URL do Pexels
+// Chave e URL do Pexels
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const PEXELS_API_URL = "https://api.pexels.com/v1/search";
 
-// ADIÇÃO: Instância do Axios para o Pexels
+// Instância do Axios para o Pexels
 const pexelsApi = axios.create({
     baseURL: PEXELS_API_URL
 });
