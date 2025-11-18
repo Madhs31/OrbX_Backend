@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "description": "Backend para a aplicação OrbX com Express, Prisma e PostgreSQL.",
   "main": "dist/server.js",
-  "type": "module", 
-  
+  "type": "module",
   "scripts": {
     "start": "ts-node src/server.ts",
     "migrate:dev": "dotenv -e .env -- npx prisma migrate dev",
-    "dev": "node --loader ts-node/esm src/server.ts",
+    "dev": "tsx src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,10 +18,9 @@
   ],
   "author": "",
   "license": "ISC",
-  
   "dependencies": {
     "@prisma/client": "^5.17.0",
-    "axios": "^1.7.2",
+    "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -42,6 +40,7 @@
     "prisma": "^5.17.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.5.4"
   }
 }
