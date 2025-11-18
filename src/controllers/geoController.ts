@@ -22,7 +22,6 @@ function convertBigInts(data: any): any {
   return obj;
 }
 
-
 // --- Continents ---
 
 export const getContinents = async (req: Request, res: Response) => {
@@ -38,7 +37,9 @@ export const getContinents = async (req: Request, res: Response) => {
 };
 
 export const createContinent = async (req: Request, res: Response) => {
-    const { name, area, population, imageUrl } = req.body; 
+    const { name: rawName, area, population, imageUrl } = req.body; 
+    const name = rawName || ''; 
+    
     if (!name) return res.status(400).json({ error: 'O nome é obrigatório.' });
 
     try {
@@ -96,6 +97,73 @@ export const getContinentById = async (req: Request, res: Response) => {
     }
 };
 
+// Update Continent
+export const updateContinent = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name: rawName, area, population, imageUrl } = req.body;
+    
+    const name = rawName || ''; 
+
+    if (!name) return res.status(400).json({ error: 'O nome é obrigatório.' });
+
+    try {
+        const populationString = (population || '0').toString().replace(/\./g, '').trim();
+        const areaString = (area || '0').toString().trim();
+
+        const finalArea = parseFloat(areaString);
+        const finalPopulation = BigInt(populationString);
+
+        if (isNaN(finalArea)) {
+            return res.status(400).json({ error: 'O valor da área é inválido.' });
+        }
+
+        const continent = await prisma.continent.update({
+            where: { id: parseInt(id!) }, 
+            data: {
+                name,
+                area: finalArea,
+                population: finalPopulation,
+                imageUrl: imageUrl || ''
+            },
+        });
+
+        res.json(convertBigInts(continent));
+
+    } catch (error: any) {
+         if (error instanceof SyntaxError || (error.message && error.message.includes("BigInt"))) {
+             return res.status(400).json({ error: 'O valor da população é inválido (deve ser um número inteiro sem vírgulas ou espaços).' });
+        }
+        if (error.code === 'P2002') {
+            return res.status(409).json({ error: 'Um continente com esse nome já existe.' });
+        }
+        if (error.code === 'P2025') {
+             return res.status(404).json({ error: 'Continente não encontrado para atualização.' });
+        }
+        console.error("Erro ao atualizar continente:", error);
+        res.status(500).json({ error: 'Erro interno ao atualizar continente.' });
+    }
+};
+
+// Delete Continent
+export const deleteContinent = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        await prisma.continent.delete({
+            where: { id: parseInt(id!) }, 
+        });
+        res.status(204).send(); 
+    } catch (error: any) {
+         if (error.code === 'P2025') {
+            return res.status(404).json({ error: 'Continente não encontrado para exclusão.' });
+        }
+         if (error.code === 'P2003') { 
+            return res.status(409).json({ error: 'Não é possível excluir: existem países associados a este continente.' });
+        }
+        console.error("Erro ao deletar continente:", error);
+        res.status(500).json({ error: 'Erro ao deletar continente.' });
+    }
+};
+
 // --- Countries ---
 
 export const getCountries = async (req: Request, res: Response) => {
@@ -117,10 +185,13 @@ export const getCountries = async (req: Request, res: Response) => {
 
 export const createCountry = async (req: Request, res: Response) => {
     const { 
-        name, capital, isoCode, population, flagUrl, continentId,
+        name: rawName, capital, isoCode: rawIsoCode, population, flagUrl, continentId,
         description, language, currency, area, callingCode,
         imageUrl 
     } = req.body;
+    
+    const name = rawName || ''; 
+    const isoCode = rawIsoCode || ''; 
 
     if (!name || !isoCode || !continentId) {
         return res.status(400).json({ error: 'Nome, Código ISO e Continente são obrigatórios.' });
@@ -137,7 +208,7 @@ export const createCountry = async (req: Request, res: Response) => {
                 isoCode, 
                 population: BigInt(populationString), 
                 flagUrl: flagUrl || '', 
-                continentId: parseInt(continentId),
+                continentId: parseInt(continentId!),
                 
                 description: description || '',
                 language: language || '',
@@ -177,6 +248,77 @@ export const getCountryById = async (req: Request, res: Response) => {
     }
 };
 
+// Update Country
+export const updateCountry = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const {
+        name: rawName, capital, isoCode: rawIsoCode, population, flagUrl, continentId,
+        description, language, currency, area, callingCode,
+        imageUrl
+    } = req.body;
+    
+    const name = rawName || ''; 
+    const isoCode = rawIsoCode || ''; 
+
+    if (!name || !isoCode || !continentId) {
+        return res.status(400).json({ error: 'Nome, Código ISO e Continente são obrigatórios.' });
+    }
+
+    try {
+        const populationString = (population || '0').toString().replace(/\./g, '').trim();
+        const areaString = (area || '0').toString().trim();
+
+        const country = await prisma.country.update({
+            where: { id: parseInt(id!) }, 
+            data: {
+                name,
+                capital: capital || '',
+                isoCode,
+                population: BigInt(populationString),
+                flagUrl: flagUrl || '',
+                continentId: parseInt(continentId!),
+
+                description: description || '',
+                language: language || '',
+                currency: currency || '',
+                area: parseFloat(areaString) || null,
+                callingCode: callingCode || '',
+                imageUrl: imageUrl || ''
+            },
+        });
+        res.json(convertBigInts(country));
+    } catch (error: any) {
+        if (error.code === 'P2002') {
+            return res.status(409).json({ error: 'Um país com esse nome ou Código ISO já existe.' });
+        }
+        if (error.code === 'P2025') {
+             return res.status(404).json({ error: 'País não encontrado para atualização.' });
+        }
+        console.error("Erro ao atualizar país:", error);
+        res.status(500).json({ error: 'Erro ao atualizar país.' });
+    }
+};
+
+// Delete Country
+export const deleteCountry = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        await prisma.country.delete({
+            where: { id: parseInt(id!) }, 
+        });
+        res.status(204).send();
+    } catch (error: any) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: 'País não encontrado para exclusão.' });
+        }
+        if (error.code === 'P2003') { 
+            return res.status(409).json({ error: 'Não é possível excluir: existem cidades associadas a este país.' });
+        }
+        console.error("Erro ao deletar país:", error);
+        res.status(500).json({ error: 'Erro ao deletar país.' });
+    }
+};
+
 
 // --- Cities ---
 
@@ -204,9 +346,11 @@ export const getCities = async (req: Request, res: Response) => {
 
 export const createCity = async (req: Request, res: Response) => {
     const { 
-        name, latitude, longitude, population, countryId,
+        name: rawName, latitude, longitude, population, countryId,
         area, timezone, language, imageUrl 
     } = req.body;
+    
+    const name = rawName || ''; 
     
     if (!name || !population || !countryId) {
         return res.status(400).json({ error: 'Nome, População e País são obrigatórios.' });
@@ -222,7 +366,7 @@ export const createCity = async (req: Request, res: Response) => {
                 latitude: parseFloat(latitude || '0'), 
                 longitude: parseFloat(longitude || '0'), 
                 population: BigInt(populationString), 
-                countryId: parseInt(countryId),
+                countryId: parseInt(countryId!),
                 
                 area: parseFloat(areaString) || null,
                 timezone: timezone || '',
@@ -260,7 +404,71 @@ export const getCityById = async (req: Request, res: Response) => {
     }
 };
 
-// --- Stats ---
+// Update City
+export const updateCity = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const {
+        name: rawName, latitude, longitude, population, countryId,
+        area, timezone, language, imageUrl
+    } = req.body;
+    
+    const name = rawName || ''; 
+
+    if (!name || !population || !countryId) {
+        return res.status(400).json({ error: 'Nome, População e País são obrigatórios.' });
+    }
+
+    try {
+        const populationString = (population || '0').toString().replace(/\./g, '').trim();
+        const areaString = (area || '0').toString().trim();
+
+        const city = await prisma.city.update({
+            where: { id: parseInt(id!) }, 
+            data: {
+                name,
+                latitude: parseFloat(latitude || '0'),
+                longitude: parseFloat(longitude || '0'),
+                population: BigInt(populationString),
+                countryId: parseInt(countryId!),
+
+                area: parseFloat(areaString) || null,
+                timezone: timezone || '',
+                language: language || '',
+                imageUrl: imageUrl || ''
+            },
+        });
+        res.json(convertBigInts(city));
+    } catch (error: any) {
+         if (error.code === 'P2002') {
+            return res.status(409).json({ error: 'Uma cidade com esse nome já existe nesse país.' });
+        }
+        if (error.code === 'P2025') {
+             return res.status(404).json({ error: 'Cidade não encontrada para atualização.' });
+        }
+        console.error("Erro ao atualizar cidade:", error);
+        res.status(500).json({ error: 'Erro ao atualizar cidade.' });
+    }
+};
+
+// Delete City
+export const deleteCity = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        await prisma.city.delete({
+            where: { id: parseInt(id!) }, 
+        });
+        res.status(204).send();
+    } catch (error: any) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: 'Cidade não encontrada para exclusão.' });
+        }
+        console.error("Erro ao deletar cidade:", error);
+        res.status(500).json({ error: 'Erro ao deletar cidade.' });
+    }
+};
+
+
+// --- Status ---
 export const getDashboardStats = async (req: Request, res: Response) => {
     try {
         const countryCount = await prisma.country.count();
