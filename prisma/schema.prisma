@@ -1,67 +1,69 @@
-// prisma/schema.prisma
-
+// 1. Informa ao Prisma para qual cliente gerar o código (TypeScript)
 generator client {
   provider = "prisma-client-js"
 }
 
+// 2. Informa ao Prisma como se conectar ao seu banco de dados
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") 
 }
 
-// --- Modelos de Dados ---
-
-// 1. Usuário (para Login/Registro e Dashboard/Admin)
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  password String  // Hash da senha
-  name     String
-  role     String  @default("user") // "user" ou "admin"
-  
-  @@map("users")
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user") 
+  createdAt DateTime @default(now())
 }
 
-// 2. Continente
+// 3. Modelos do Banco de Dados
+
 model Continent {
-  id      Int      @id @default(autoincrement())
-  name    String   @unique
-  area    Float?   // Em milhões de km²
-  population BigInt? // População total
-  
-  countries Country[]
-  
-  @@map("continents")
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  area        Float?    
+  population  BigInt?   
+  imageUrl    String?   
+  countries   Country[]
 }
 
-// 3. País (Com link para Continente)
 model Country {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
   capital      String?
+  isoCode      String      @unique
   population   BigInt?
-  isoCode      String?  @unique // Ex: USA, BRA
-  flagUrl      String?
-  
+  flagUrl      String?     
+  description  String?     @db.Text
+  language     String?
+  currency     String?
+  area         Float?
+  callingCode  String?
+  imageUrl     String?     
+
   continentId  Int
-  continent    Continent @relation(fields: [continentId], references: [id])
-  
+  continent    Continent   @relation(fields: [continentId], references: [id])
   cities       City[]
   
-  @@map("countries")
+  @@index([continentId])
 }
 
-// 4. Cidade (Com link para País)
 model City {
-  id            Int      @id @default(autoincrement())
-  name          String
-  latitude      Float?
-  longitude     Float?
-  population    BigInt?
-  
-  countryId     Int
-  country       Country @relation(fields: [countryId], references: [id])
-  
-  @@unique([name, countryId]) // Uma cidade só pode existir uma vez em um país.
-  @@map("cities")
+  id           Int       @id @default(autoincrement())
+  name         String
+  latitude     Float     
+  longitude    Float     
+  population   BigInt
+  area         Float?
+  timezone     String?
+  language     String?
+  imageUrl     String?   
+
+  countryId    Int
+  country      Country   @relation(fields: [countryId], references: [id])
+
+  @@unique([name, countryId]) 
+  @@index([countryId])
 }
