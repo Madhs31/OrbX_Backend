@@ -1,30 +1,39 @@
-// src/routes/apiRoutes.ts
 import { Router } from 'express';
 import { 
-    getContinents, createContinent, 
-    getCountries, createCountry, 
-    getCities, createCity
+    getContinents, createContinent, getContinentById, 
+    getCountries, createCountry, getCountryById, 
+    getCities, createCity, getCityById, 
+    getDashboardStats 
 } from '../controllers/geoController.js';
-import { getCountryInfo, getWeather } from '../services/externalApiService.js';
-// import { authenticateToken, checkAdmin } from '../middleware/authMiddleware'; // Importar após criar
+import { 
+    getCountryInfo, 
+    getWeather,
+    getPexelsImage 
+} from '../services/externalApiService.js';
 
 const router = Router();
 
 // Continentes
 router.get('/continents', getContinents);
-router.post('/continents', createContinent); // Proteger com checkAdmin
-// router.put('/continents/:id', authenticateToken, checkAdmin, updateContinent);
-// router.delete('/continents/:id', authenticateToken, checkAdmin, deleteContinent);
+router.get('/continents/:id', getContinentById); 
+router.post('/continents', createContinent); 
 
 // Países
 router.get('/countries', getCountries);
-router.post('/countries', createCountry); // Proteger com checkAdmin
+router.get('/countries/:id', getCountryById); 
+router.post('/countries', createCountry); 
 
 // Cidades
 router.get('/cities', getCities);
-router.post('/cities', createCity); // Proteger com checkAdmin
+router.get('/cities/:id', getCityById); 
+router.post('/cities', createCity); 
 
+// Stats
+router.get('/stats/dashboard', getDashboardStats); 
+
+// Rotas Externas
 router.get('/external/country/:countryName', getCountryInfo); 
 router.get('/external/weather', getWeather);
+router.get('/external/image', getPexelsImage); // <-- ADICIONADO
 
 export default router;
