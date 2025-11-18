@@ -60,17 +60,24 @@ Crie um arquivo `.env` na raiz com os valores necessários:
     DATABASE_URL="postgresql://user:password@localhost:5432/orbx?schema=public"
     PORT=4000
 
-### 4. Execute as migrações do Prisma
+### 4. Gere o cliente Prisma
+
+``` bash
+npx prisma generate
+```
+
+### 5. Execute as migrações do Prisma
 
 ``` bash
 npx prisma migrate dev
 ```
 
-### 5. Inicie o servidor em modo de desenvolvimento
+### 6. Inicie o servidor em modo de desenvolvimento
 
 ``` bash
 npm run dev
 ```
+
 
 Servidor disponível em:
 
