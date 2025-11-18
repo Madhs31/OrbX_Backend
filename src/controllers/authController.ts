@@ -9,7 +9,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 export const register = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     
-    // Simples validação de senha (o front deve fazer mais)
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
@@ -48,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
             return res.status(401).json({ error: 'Credenciais inválidas.' });
         }
 
-        // 2. Compara a senha (hashed)
+        // 2. Compara a senha 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Credenciais inválidas.' });
@@ -58,7 +57,7 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             JWT_SECRET,
-            { expiresIn: '1d' } // Expira em 1 dia
+            { expiresIn: '1d' } 
         );
         
         // 4. Retorna o token para o Front-end
