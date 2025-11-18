@@ -58,7 +58,12 @@ npm install
 Crie um arquivo `.env` na raiz com os valores necessários:
 
     DATABASE_URL="postgresql://user:password@localhost:5432/orbx?schema=public"
-    PORT=4000
+    # Chave secreta para JWT (Autenticação)
+    JWT_SECRET="sua_chave_secreta_aqui_escolha_uma_forte"
+    # Chave da OpenWeatherMap API 
+    OPENWEATHERMAP_API_KEY=""
+    # Chave da PEXELS API 
+    PEXELS_API_KEY=""
 
 ### 4. Gere o cliente Prisma
 
