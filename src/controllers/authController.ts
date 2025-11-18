@@ -1,4 +1,3 @@
-// src/controllers/authController.ts
 import type { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
