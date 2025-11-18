@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors'; // Importe o cors
+import cors from 'cors'; 
 import dotenv from 'dotenv';
 import apiRoutes from './routes/apiRoutes.js'; 
 import authRoutes from './routes/authRoutes.js'; 
@@ -9,12 +9,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
-
-// --- CORREÇÃO AQUI ---
-// Removemos a restrição de 'origin' para permitir qualquer porta (localhost:3000, 5173, etc)
 app.use(cors()); 
-// --- FIM DA CORREÇÃO ---
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
